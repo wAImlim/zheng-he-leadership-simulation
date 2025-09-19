@@ -4,15 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zheng He's Leadership Voyage</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { margin: 0; font-family: system-ui, sans-serif; }
+        .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        .animate-bounce { animation: bounce 1s infinite; }
+        .animate-ping { animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite; }
+        .animate-spin { animation: spin 1s linear infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+        @keyframes bounce { 0%, 100% { transform: translateY(-25%); animation-timing-function: cubic-bezier(0.8, 0, 1, 1); } 50% { transform: translateY(0); animation-timing-function: cubic-bezier(0, 0, 0.2, 1); } }
+        @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    </style>
 </head>
 <body>
-    <div class="min-h-screen bg-gradient-to-br from-blue-900 to-teal-800 text-white flex items-center justify-center">
-        <div class="text-center">
-            <h1 class="text-4xl font-bold mb-4">🚢 Zheng He's Leadership Voyage</h1>
-            <p class="text-xl mb-8">Interactive Leadership Assessment Game</p>
-            <p class="text-lg">Game is loading... Full version coming soon!</p>
+    <div id="root">
+        <div class="min-h-screen bg-gradient-to-br from-blue-900 to-teal-800 text-white flex items-center justify-center">
+            <div class="text-center">
+                <div class="text-6xl mb-4 animate-bounce">🚢</div>
+                <h1 class="text-4xl font-bold mb-4">Loading Your Voyage...</h1>
+                <div class="animate-pulse">Preparing the treasure fleet...</div>
+            </div>
         </div>
     </div>
+    
+    <!-- Load game script -->
+    <script type="text/babel" src="game.js"></script>
 </body>
 </html>
