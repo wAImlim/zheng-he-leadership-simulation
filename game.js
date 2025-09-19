@@ -137,3 +137,496 @@ const profiles = {
     emoji: "⚖️"
   }
 };
+// StatBar Component
+const StatBar = ({ label, value, icon: Icon }) => (
+  <div className="flex items-center space-x-3 mb-2">
+    <Icon className="w-4 h-4 text-blue-600" />
+    <span className="text-sm font-medium w-20">{label}:</span>
+    <div className="flex-1 bg-gray-200 rounded-full h-2">
+      <div 
+        className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-500"
+        style={{ width: `${value}%` }}
+      />
+    </div>
+    <span className="text-sm font-bold w-8">{value}</span>
+  </div>
+);
+
+// Main Game Component
+const ZhengHeLeadershipGame = () => {
+  const [currentScenario, setCurrentScenario] = useState(0);
+  const [gameState, setGameState] = useState({
+    crewMorale: 75,
+    resources: 80,
+    diplomaticRelations: 60,
+    fleetCohesion: 70,
+    reputation: 50
+  });
+  const [choices, setChoices] = useState([]);
+  const [gamePhase, setGamePhase] = useState('intro');
+  const [leadershipScores, setLeadershipScores] = useState({
+    transformational: 0,
+    transactional: 0,
+    situational: 0,
+    pathGoal: 0,
+    authentic: 0
+  });
+
+  const applyChoice = (choice) => {
+    setGameState(prevState => {
+      const newState = { ...prevState };
+      Object.keys(choice.effects).forEach(key => {
+        newState[key] = Math.max(0, Math.min(100, newState[key] + choice.effects[key]));
+      });
+      return newState;
+    });
+
+    setLeadershipScores(prevScores => {
+      const newScores = { ...prevScores };
+      Object.keys(choice.leadership).forEach(key => {
+        newScores[key] += choice.leadership[key];
+      });
+      return newScores;
+    });
+
+    setChoices(prev => [...prev, { scenario: currentScenario, choice: choice.text }]);
+
+    if (currentScenario < scenarios.length - 1) {
+      setCurrentScenario(currentScenario + 1);
+    } else {
+      setGamePhase('crisis');
+    }
+  };
+
+  const getLeadershipProfile = () => {
+    const total = Object.values(leadershipScores).reduce((sum, score) => sum + score, 0);
+    if (total === 0) return null;
+
+    const dominantStyle = Object.keys(leadershipScores).reduce((a, b) => 
+      leadershipScores[a] > leadershipScores[b] ? a : b
+    );
+
+    return profiles[dominantStyle];
+  };
+
+  // Intro Screen
+  if (gamePhase === 'intro') {
+    return (
+      <div className="max-w-4xl mx-auto p-6 bg-gradient-to-br from-blue-900 via-blue-800 to-teal-800 text-white min-h-screen relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-20 left-10 w-32 h-32 bg-blue-400 rounded-full animate-pulse"></div>
+          <div className="absolute top-40 right-20 w-24 h-24 bg-teal-400 rounded-full animate-ping"></div>
+          <div className="absolute bottom-20 left-1/4 w-40 h-40 bg-blue-300 rounded-full animate-bounce"></div>
+        </div>
+        
+        <div className="relative z-10">
+          <div className="text-center mb-8">
+            <div className="w-24 h-24 mx-auto mb-4 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center relative">
+              <div className="w-20 h-20 bg-gradient-to-br from-amber-600 to-yellow-700 rounded-full flex items-center justify-center">
+                <Crown className="w-10 h-10 text-yellow-200" />
+              </div>
+              <div className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center">
+                <Star className="w-3 h-3 text-white" />
+              </div>
+            </div>
+            <h1 className="text-4xl font-bold mb-4">Zheng He's Leadership Voyage</h1>
+            <h2 className="text-2xl mb-6 text-blue-200">Part 1: The First Voyage (1405-1407)</h2>
+            
+            <div className="relative w-32 h-20 mx-auto mb-6">
+              <div className="absolute inset-0 bg-gradient-to-r from-amber-700 to-yellow-600 rounded-lg transform rotate-1 animate-pulse">
+                <div className="w-full h-2 bg-red-600 rounded-t-lg"></div>
+                <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-1 h-8 bg-amber-800"></div>
+                <div className="absolute top-1 left-1/2 transform -translate-x-1/2 w-6 h-3 bg-red-500 rounded"></div>
+              </div>
+              <div className="absolute -bottom-2 -left-2 text-blue-400 animate-bounce">🌊</div>
+              <div className="absolute -bottom-2 right-0 text-blue-400 animate-bounce">🌊</div>
+            </div>
+          </div>
+          
+          <div className="bg-black bg-opacity-20 backdrop-blur-sm rounded-xl p-8 mb-6">
+            <h3 className="text-xl font-semibold mb-4 flex items-center">
+              <Compass className="w-6 h-6 mr-2 text-yellow-400" />
+              Your Mission
+            </h3>
+            <p className="text-lg leading-relaxed mb-4">
+              You are Admiral Zheng He, entrusted by Emperor Yongle to lead the greatest naval expedition in history. 
+              Your treasure fleet will traverse the South China Sea, Indian Ocean, and beyond, engaging in diplomacy, 
+              trade, and exploration.
+            </p>
+            <p className="text-lg leading-relaxed mb-6">
+              Your leadership decisions will reveal your natural leadership style and prepare you for the challenges ahead. 
+              Each choice will impact your crew's morale, fleet cohesion, diplomatic relations, and resources.
+            </p>
+            
+            <div className="grid md:grid-cols-2 gap-4 mb-6">
+              <div className="bg-blue-800 bg-opacity-30 rounded-lg p-4 relative overflow-hidden">
+                <div className="absolute top-2 right-2 text-2xl">⛵</div>
+                <h4 className="font-semibold mb-2 flex items-center">
+                  <Users className="w-5 h-5 mr-2" />
+                  Your Fleet
+                </h4>
+                <p className="text-sm">317 ships, 27,800 crew members from diverse backgrounds</p>
+                <div className="flex justify-center mt-2 space-x-1">
+                  <div className="w-4 h-3 bg-yellow-600 rounded-sm animate-pulse"></div>
+                  <div className="w-4 h-3 bg-yellow-600 rounded-sm animate-pulse"></div>
+                  <div className="w-4 h-3 bg-yellow-600 rounded-sm animate-pulse"></div>
+                  <div className="w-4 h-3 bg-yellow-600 rounded-sm animate-pulse"></div>
+                </div>
+              </div>
+              <div className="bg-blue-800 bg-opacity-30 rounded-lg p-4 relative overflow-hidden">
+                <div className="absolute top-2 right-2 text-2xl">🗺️</div>
+                <h4 className="font-semibold mb-2 flex items-center">
+                  <Globe className="w-5 h-5 mr-2" />
+                  Your Route
+                </h4>
+                <p className="text-sm">South China Sea → Southeast Asia → Indian Ocean</p>
+                <div className="flex justify-between mt-2 text-xs">
+                  <span className="text-green-400">🏛️ Nanjing</span>
+                  <span className="text-yellow-400 animate-pulse">⚓ Current</span>
+                  <span className="text-blue-400">🏝️ Malacca</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <button 
+            onClick={() => setGamePhase('playing')}
+            className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-blue-900 font-bold py-4 px-6 rounded-xl transition-all duration-200 text-lg shadow-lg hover:shadow-xl transform hover:scale-105"
+          >
+            <span className="mr-2">⚓</span>
+            Begin Your Voyage
+            <ChevronRight className="inline w-6 h-6 ml-2" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Crisis Screen
+  if (gamePhase === 'crisis') {
+    return (
+      <div className="max-w-4xl mx-auto p-6 bg-gradient-to-br from-red-900 via-orange-800 to-yellow-700 text-white min-h-screen relative overflow-hidden">
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-10 left-10 text-6xl animate-pulse">⚡</div>
+          <div className="absolute top-20 right-20 text-4xl animate-bounce">🌩️</div>
+          <div className="absolute bottom-20 left-1/4 text-5xl animate-ping">⚔️</div>
+        </div>
+        
+        <div className="relative z-10">
+          <div className="text-center mb-8">
+            <div className="relative w-32 h-32 mx-auto mb-4">
+              <div className="w-full h-full bg-gradient-to-br from-red-600 to-orange-600 rounded-full flex items-center justify-center animate-pulse">
+                <div className="w-20 h-20 bg-gradient-to-br from-yellow-500 to-red-500 rounded-full flex items-center justify-center">
+                  <Crown className="w-10 h-10 text-white animate-bounce" />
+                </div>
+              </div>
+              <div className="absolute -top-2 -right-2 text-2xl animate-spin">⚡</div>
+              <div className="absolute -bottom-2 -left-2 text-xl animate-pulse">🔥</div>
+            </div>
+            <h1 className="text-3xl font-bold mb-4">Crisis at Malacca</h1>
+            <h2 className="text-xl mb-6 text-orange-200">A Test of Your Leadership</h2>
+            
+            <div className="flex justify-center items-center space-x-4 mb-6">
+              <div className="text-3xl animate-bounce">🏰</div>
+              <div className="text-2xl animate-pulse">⚔️</div>
+              <div className="text-3xl animate-bounce">⛵</div>
+            </div>
+          </div>
+          
+          <div className="bg-black bg-opacity-30 backdrop-blur-sm rounded-xl p-8 mb-6">
+            <p className="text-lg leading-relaxed mb-6">
+              You have arrived at the strategic port of Malacca, but tensions are high. The local sultan is suspicious 
+              of your massive fleet and questions your true intentions. Some of your crew are eager to demonstrate 
+              Chinese power, while others advocate for patient diplomacy.
+            </p>
+            
+            <p className="text-lg leading-relaxed mb-6">
+              Reports reach you that rival traders are spreading rumors about your mission, and local merchants are 
+              reluctant to engage. The decisions you make here will determine not only the success of this voyage, 
+              but the future of Chinese maritime diplomacy.
+            </p>
+            
+            <div className="bg-red-800 bg-opacity-30 rounded-lg p-6 mb-6">
+              <h3 className="text-xl font-semibold mb-4">Your Leadership Profile So Far:</h3>
+              {getLeadershipProfile() && (
+                <div className="text-center">
+                  <div className="text-4xl mb-2">{getLeadershipProfile().emoji}</div>
+                  <h4 className="text-lg font-bold text-yellow-300 mb-2">
+                    {getLeadershipProfile().title}
+                  </h4>
+                  <p className="text-base">
+                    {getLeadershipProfile().description}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <div className="bg-black bg-opacity-20 backdrop-blur-sm rounded-xl p-6 text-center relative overflow-hidden">
+            <div className="absolute top-4 left-4 text-2xl animate-pulse">📜</div>
+            <div className="absolute top-4 right-4 text-2xl animate-bounce">🚢</div>
+            <h3 className="text-xl font-semibold mb-4">To Be Continued...</h3>
+            <p className="text-lg mb-6">
+              This crisis will be resolved in Part 2, which you'll play after your leadership workshop. 
+              The insights you gain will help you navigate this complex diplomatic challenge.
+            </p>
+            
+            <div className="flex justify-center space-x-4 mb-6">
+              <div className="text-3xl animate-pulse">🎓</div>
+              <div className="text-2xl">→</div>
+              <div className="text-3xl animate-bounce">🎮</div>
+            </div>
+            
+            <button 
+              onClick={() => setGamePhase('results')}
+              className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-red-900 font-bold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg"
+            >
+              <span className="mr-2">📊</span>
+              View Your Leadership Assessment
+              <ChevronRight className="inline w-5 h-5 ml-2" />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Results Screen
+  if (gamePhase === 'results') {
+    const profile = getLeadershipProfile();
+    return (
+      <div className="max-w-4xl mx-auto p-6 bg-gradient-to-br from-purple-900 via-blue-900 to-teal-800 text-white min-h-screen relative overflow-hidden">
+        <div className="absolute inset-0 opacity-15">
+          <div className="absolute top-10 right-10 text-5xl animate-pulse">🏆</div>
+          <div className="absolute top-40 left-10 text-4xl animate-bounce">📈</div>
+          <div className="absolute bottom-20 right-20 text-6xl animate-ping">⭐</div>
+          <div className="absolute bottom-40 left-1/3 text-3xl animate-pulse">🎯</div>
+        </div>
+        
+        <div className="relative z-10">
+          <div className="text-center mb-8">
+            <div className="relative w-24 h-24 mx-auto mb-4">
+              <div className="w-full h-full bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center animate-pulse">
+                <Star className="w-12 h-12 text-white" />
+              </div>
+              <div className="absolute -top-2 -right-2 w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center animate-bounce">
+                <span className="text-xs font-bold">1</span>
+              </div>
+            </div>
+            <h1 className="text-3xl font-bold mb-4">Your Leadership Assessment</h1>
+            <h2 className="text-xl mb-6 text-purple-200">Part 1 Complete</h2>
+            
+            <div className="flex justify-center space-x-4 mb-6">
+              <div className="text-2xl animate-pulse">🧭</div>
+              <div className="text-3xl animate-bounce">⛵</div>
+              <div className="text-2xl animate-pulse">🗺️</div>
+            </div>
+          </div>
+          
+          {profile && (
+            <div className="bg-black bg-opacity-20 backdrop-blur-sm rounded-xl p-8 mb-6 relative overflow-hidden">
+              <div className="absolute top-4 right-4 text-3xl animate-pulse">👑</div>
+              <div className="text-center mb-4">
+                <div className="text-6xl mb-4">{profile.emoji}</div>
+                <h3 className="text-2xl font-bold text-yellow-300 mb-4">{profile.title}</h3>
+              </div>
+              <p className="text-lg leading-relaxed text-center">{profile.description}</p>
+            </div>
+          )}
+          
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="bg-black bg-opacity-20 backdrop-blur-sm rounded-xl p-6">
+              <h3 className="text-xl font-semibold mb-4 flex items-center">
+                <Ship className="w-6 h-6 mr-2" />
+                Fleet Status
+              </h3>
+              <StatBar label="Morale" value={gameState.crewMorale} icon={Users} />
+              <StatBar label="Cohesion" value={gameState.fleetCohesion} icon={Ship} />
+              <StatBar label="Diplomacy" value={gameState.diplomaticRelations} icon={Globe} />
+              <StatBar label="Resources" value={gameState.resources} icon={Star} />
+              <StatBar label="Reputation" value={gameState.reputation} icon={Crown} />
+            </div>
+            
+            <div className="bg-black bg-opacity-20 backdrop-blur-sm rounded-xl p-6">
+              <h3 className="text-xl font-semibold mb-4 flex items-center">
+                <Star className="w-6 h-6 mr-2" />
+                Leadership Analysis
+              </h3>
+              {Object.entries(leadershipScores).map(([style, score]) => (
+                <div key={style} className="mb-3">
+                  <div className="flex justify-between mb-1">
+                    <span className="capitalize text-sm font-medium">{style.replace(/([A-Z])/g, ' $1')}</span>
+                    <span className="text-sm">{score}</span>
+                  </div>
+                  <div className="bg-gray-700 rounded-full h-2">
+                    <div 
+                      className="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full transition-all duration-500"
+                      style={{ width: `${Math.min(100, (score / Math.max(...Object.values(leadershipScores))) * 100)}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          <div className="bg-black bg-opacity-20 backdrop-blur-sm rounded-xl p-6 mt-6 text-center relative overflow-hidden">
+            <div className="absolute top-4 left-4 text-2xl animate-pulse">🎓</div>
+            <div className="absolute bottom-4 right-4 text-2xl animate-bounce">📚</div>
+            <h3 className="text-xl font-semibold mb-4">Next Steps</h3>
+            <p className="text-lg mb-4">
+              Take your leadership assessment results to your workshop. Part 2 of the game will challenge you to apply 
+              what you learn to resolve the crisis at Malacca and continue your historic voyage.
+            </p>
+            
+            <div className="flex justify-center space-x-6 mb-4">
+              <div className="text-center">
+                <div className="text-3xl mb-1">📊</div>
+                <div className="text-xs">Assessment</div>
+              </div>
+              <div className="text-2xl">→</div>
+              <div className="text-center">
+                <div className="text-3xl mb-1 animate-pulse">🏫</div>
+                <div className="text-xs">Workshop</div>
+              </div>
+              <div className="text-2xl">→</div>
+              <div className="text-center">
+                <div className="text-3xl mb-1 animate-bounce">🎮</div>
+                <div className="text-xs">Part 2</div>
+              </div>
+            </div>
+            
+            <p className="text-base text-purple-200">
+              <span className="mr-2">💾</span>
+              Save or screenshot this assessment for your professional development discussion.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Main Gameplay Screen
+  const scenario = scenarios[currentScenario];
+
+  return (
+    <div className="max-w-4xl mx-auto p-6 bg-gradient-to-br from-blue-900 via-teal-800 to-green-800 text-white min-h-screen relative overflow-hidden">
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute top-10 left-10 text-4xl animate-pulse">🌊</div>
+        <div className="absolute top-20 right-20 text-3xl animate-bounce">⛵</div>
+        <div className="absolute bottom-20 left-1/4 text-5xl animate-ping">🗺️</div>
+        <div className="absolute bottom-10 right-10 text-3xl animate-pulse">🧭</div>
+      </div>
+      
+      <div className="relative z-10">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-2xl font-bold flex items-center">
+              <span className="mr-2">🚢</span>
+              Zheng He's Leadership Voyage
+            </h1>
+            <p className="text-blue-200">Scenario {currentScenario + 1} of {scenarios.length}</p>
+          </div>
+          <div className="text-right">
+            <div className="text-sm text-teal-200 flex items-center">
+              <span className="mr-2">📍</span>
+              {scenario.location}
+            </div>
+            <div className="flex items-center mt-1">
+              <Ship className="w-4 h-4 mr-1" />
+              <span className="text-xs">Fleet Status: Active</span>
+              <span className="ml-2 animate-pulse">⚓</span>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-black bg-opacity-20 backdrop-blur-sm rounded-xl p-4 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <StatBar label="Morale" value={gameState.crewMorale} icon={Users} />
+            <StatBar label="Cohesion" value={gameState.fleetCohesion} icon={Ship} />
+            <StatBar label="Diplomacy" value={gameState.diplomaticRelations} icon={Globe} />
+            <StatBar label="Resources" value={gameState.resources} icon={Star} />
+            <StatBar label="Reputation" value={gameState.reputation} icon={Crown} />
+          </div>
+        </div>
+        
+        <div className="bg-black bg-opacity-30 backdrop-blur-sm rounded-xl p-8 mb-6 relative overflow-hidden">
+          <div className="absolute top-4 right-4 text-3xl">
+            {currentScenario === 0 && <span className="animate-pulse">👥</span>}
+            {currentScenario === 1 && <span className="animate-bounce">⛈️</span>}
+            {currentScenario === 2 && <span className="animate-pulse">🤝</span>}
+            {currentScenario === 3 && <span className="animate-bounce">🌏</span>}
+          </div>
+          
+          <h2 className="text-3xl font-bold mb-4 text-yellow-300 flex items-center">
+            {currentScenario === 0 && <span className="mr-3">⚔️</span>}
+            {currentScenario === 1 && <span className="mr-3">🌩️</span>}
+            {currentScenario === 2 && <span className="mr-3">👑</span>}
+            {currentScenario === 3 && <span className="mr-3">🌍</span>}
+            {scenario.title}
+          </h2>
+          
+          <p className="text-lg mb-6 leading-relaxed">{scenario.description}</p>
+          
+          <div className="bg-blue-900 bg-opacity-40 rounded-lg p-6 mb-6 relative">
+            <div className="absolute top-2 left-2 text-2xl">
+              {currentScenario === 0 && '🏗️'}
+              {currentScenario === 1 && '⚠️'}
+              {currentScenario === 2 && '🏰'}
+              {currentScenario === 3 && '🤝'}
+            </div>
+            <h3 className="text-xl font-semibold mb-3 ml-8">The Situation:</h3>
+            <p className="text-base leading-relaxed ml-8">{scenario.situation}</p>
+          </div>
+          
+          <h3 className="text-xl font-semibold mb-4 flex items-center">
+            <span className="mr-2">🤔</span>
+            How do you respond?
+          </h3>
+          
+          <div className="space-y-4">
+            {scenario.choices.map((choice, index) => (
+              <button
+                key={index}
+                onClick={() => applyChoice(choice)}
+                className="w-full text-left bg-teal-800 bg-opacity-30 hover:bg-teal-700 hover:bg-opacity-40 border border-teal-600 border-opacity-30 hover:border-teal-500 rounded-xl p-6 transition-all duration-200 group relative overflow-hidden"
+              >
+                <div className="absolute top-2 right-2 text-2xl opacity-50 group-hover:opacity-100 transition-opacity">
+                  {index === 0 && '💪'}
+                  {index === 1 && '🎯'}
+                  {index === 2 && '🔄'}
+                </div>
+                <div className="flex items-start">
+                  <div className="bg-gradient-to-br from-yellow-500 to-orange-500 text-teal-900 rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4 mt-1 group-hover:from-yellow-400 group-hover:to-orange-400 transition-all">
+                    {String.fromCharCode(65 + index)}
+                  </div>
+                  <p className="text-base leading-relaxed flex-1 pr-8">{choice.text}</p>
+                  <ChevronRight className="w-5 h-5 text-teal-400 group-hover:text-yellow-400 transition-colors ml-2 mt-1" />
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+        
+        <div className="flex justify-center">
+          <div className="flex space-x-2">
+            {scenarios.map((_, index) => (
+              <div
+                key={index}
+                className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                  index <= currentScenario ? 'bg-yellow-400 animate-pulse' : 'bg-gray-600'
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+        
+        <div className="fixed bottom-4 right-4 text-4xl animate-bounce">
+          🧭
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Render the game
+ReactDOM.render(<ZhengHeLeadershipGame />, document.getElementById('root'));
